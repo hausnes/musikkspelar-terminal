@@ -6,7 +6,6 @@ from textual.message import Message
 from textual.widgets import Footer, Header
 
 from ..audio.analyzer import SpectrumAnalyzer
-from ..audio.mpv_backend import MpvBackend
 from ..models import Library
 from ..models.cover import find_cover
 from ..player import Player, PlayerState
@@ -48,12 +47,13 @@ class MusicPlayerApp(App):
         Binding("q", "quit", "Avslutt"),
     ]
 
-    def __init__(self, music_folder):
+    def __init__(self, music_folder, backend):
         super().__init__()
-        self.library = Library(music_folder)
-        # Hendingar frå mpv kjem i ein annan tråd. post_message er trådtrygg
+        self.backend_name = type(backend).__name__.removesuffix("Backend").lower()
+        self.library = Library(music_folder, backend.SUPPORTED_EXTENSIONS)
+        # Hendingar frå lydmotoren kjem i ein annan tråd. post_message er trådtrygg
         # og blokkerer ikkje, så vi sender dei vidare som meldingar.
-        self.player = Player(MpvBackend(), dispatch=lambda callback: self.post_message(BackendEvent(callback)))
+        self.player = Player(backend, dispatch=lambda callback: self.post_message(BackendEvent(callback)))
         self.player.add_listener(self.refresh_views)
         self.analyzer = SpectrumAnalyzer()
         self.player.add_listener(self._prepare_spectrum)
@@ -86,7 +86,7 @@ class MusicPlayerApp(App):
         tree = self.query_one(LibraryTree)
         tree.load(self.library)
         tree.focus()
-        self.sub_title = str(self.library.root)
+        self.sub_title = f"{self.library.root} · {self.backend_name}"
         if self.library.errors:
             self.notify(f"{len(self.library.errors)} filer kunne ikkje lesast", severity="warning")
         if not len(self.library):

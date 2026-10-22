@@ -1,30 +1,47 @@
-# musikkspelar-terminal
-Ein musikkspelar i terminalen, med litt grom GUI.
+# musikkspelar
 
-Byggd med [Textual](https://textual.textualize.io/) (grensesnitt), [mpv](https://mpv.io/) (avspeling, med gapless overgangar)
-og [mutagen](https://mutagen.readthedocs.io/) (lesing av taggar i MP3, FLAC m.fl.).
-Spektrumanalysatoren dekodar låta ein gong til med [miniaudio](https://github.com/irmen/pyminiaudio)
-og reknar ut frekvensane med numpy (FFT), i takt med posisjonen til mpv.
+Ein musikkspelar i terminalen, med litt grom GUI: bibliotek, kø, gapless avspeling,
+spektrumanalysator i Winamp-stil og albumcover. Rett i terminalvindauget.
 
-Albumcover blir henta frå taggane i fila (MP3, FLAC, M4A, OGG), eller frå eit bilete i albummappa
-(`cover.jpg`, `folder.jpg` o.l.). Det blir teikna med halvblokk-teikn (`▀`), så det fungerer i alle
-terminalar med fargestøtte, også Terminal.app.
+Fungerer på MacOS, Linux og Windows. Krev Python 3.11 eller nyare og ein terminal med fargestøtte
+(Terminal.app, iTerm2, Ghostty, Windows Terminal, …).
 
 ## Installasjon
 
+Med [uv](https://docs.astral.sh/uv/) (anbefalt – hentar òg riktig Python-versjon):
+
 ```sh
-brew install mpv
-python3 -m venv .venv
-.venv/bin/pip install -e .
+uv tool install musikkspelar
 ```
+
+eller med pipx:
+
+```sh
+pipx install musikkspelar
+```
+
+Det er alt. Lyden blir spela med [miniaudio](https://github.com/irmen/pyminiaudio), som kjem med pakken.
+
+### Valfritt: mpv
+
+Med [mpv](https://mpv.io/) som lydmotor kan spelaren òg spele M4A og Opus. Installer mpv, og så spelaren med mpv-tillegget:
+
+```sh
+brew install mpv                          # macOS
+sudo apt install libmpv2                  # Debian/Ubuntu
+uv tool install "musikkspelar[mpv]"
+```
+
+Spelaren brukar mpv automatisk når det er tilgjengeleg.
 
 ## Bruk
 
 ```sh
-.venv/bin/musikkspelar ~/Music
+musikkspelar ~/Music
 ```
 
-Mappa blir skanna rekursivt. Mappestrukturen `Artist/Album/låt.mp3` blir brukt dersom taggane manglar.
+Mappa blir skanna rekursivt etter MP3, FLAC, OGG og WAV (pluss M4A og Opus med mpv).
+Mappestrukturen `Artist/Album/låt.mp3` blir brukt dersom taggane manglar.
 
 | Tast | Handling |
 |---|---|
@@ -43,26 +60,44 @@ Mappa blir skanna rekursivt. Mappestrukturen `Artist/Album/låt.mp3` blir brukt 
 | `Tab` | Byt mellom bibliotek og kø |
 | `q` | Avslutt |
 
-## Struktur
+Vel lydmotor sjølv med `--lydmotor mpv` eller `--lydmotor miniaudio` (standard: `auto`).
+
+**Albumcover** blir henta frå taggane i fila (MP3, FLAC, M4A, OGG), eller frå eit bilete i albummappa
+(`cover.jpg`, `folder.jpg` o.l.). Det blir teikna med halvblokk-teikn (`▀`), så det fungerer i alle
+terminalar med fargestøtte.
+
+**Spektrumanalysatoren** dekodar låta ein gong til i bakgrunnen og reknar ut frekvensane med FFT,
+i takt med avspelinga.
+
+## Utvikling
+
+```sh
+git clone https://github.com/hausnes/musikkspelar-terminal.git
+cd musikkspelar-terminal
+python3 -m venv .venv
+.venv/bin/pip install -e ".[mpv,test]"
+.venv/bin/pytest
+```
 
 ```
 musikkspelar/
-├── models/          # Rein logikk, utan grensesnitt eller lyd
-│   ├── track.py     # Track: ei låt, lagar seg sjølv frå fil
-│   ├── library.py   # Library: skannar mappa, grupperer artist → album → låtar
-│   ├── queue.py     # PlayQueue: rekkjefølgje, stokking og gjenta
-│   └── cover.py     # find_cover(): finn albumcover i fila eller mappa
+├── models/              # Rein logikk, utan grensesnitt eller lyd
+│   ├── track.py         # Track: ei låt, lagar seg sjølv frå fil
+│   ├── library.py       # Library: skannar mappa, grupperer artist → album → låtar
+│   ├── queue.py         # PlayQueue: rekkjefølgje, stokking og gjenta
+│   └── cover.py         # find_cover(): finn albumcover i fila eller mappa
 ├── audio/
-│   ├── backend.py   # AudioBackend: abstrakt grensesnitt for lydmotorar
-│   ├── mpv_backend.py
-│   └── analyzer.py  # SpectrumAnalyzer: frekvensspekter for eit gitt tidspunkt i ei låt
-├── player.py        # Player: koplar køen til lydmotoren og varslar lyttarar
-└── ui/              # Textual-appen og widgetane (spectrum.py: Winamp-søylene, cover.py: albumcover)
+│   ├── backend.py       # AudioBackend: abstrakt grensesnitt for lydmotorar
+│   ├── mpv_backend.py   # MpvBackend: avspeling med libmpv
+│   ├── miniaudio_backend.py  # MiniaudioBackend: avspeling utan systemavhengigheiter
+│   └── analyzer.py      # SpectrumAnalyzer: frekvensspekter for eit tidspunkt i ei låt
+├── player.py            # Player: koplar køen til lydmotoren og varslar lyttarar
+└── ui/                  # Textual-appen og widgetane (spectrum.py, cover.py, …)
 ```
 
-## Testar
+Ny versjon blir publisert til PyPI automatisk når ein lagar ein release på GitHub
+(sjå `.github/workflows/publish.yml`).
 
-```sh
-.venv/bin/pip install pytest
-.venv/bin/pytest
-```
+## Lisens
+
+MIT
