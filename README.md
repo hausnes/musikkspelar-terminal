@@ -71,6 +71,9 @@ i takt med avspelinga.
 
 ## Utvikling
 
+Nysgjerrig på korleis alt heng saman? Les [Korleis det heng saman](docs/korleis-det-heng-saman.md):
+arkitekturen, trådar, spektrumanalysatoren, albumcover, testing og vegen til PyPI.
+
 ```sh
 git clone https://github.com/hausnes/musikkspelar-terminal.git
 cd musikkspelar-terminal
