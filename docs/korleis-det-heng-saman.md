@@ -137,15 +137,15 @@ class Track:
 
 ### `Library`: biblioteket
 
-Skannar ei mappe rekursivt og grupperer låtane som artist → album → låtar. Det er ein ordbok inni ein
+Skannar ei mappe rekursivt og grupperer låtane som artist → album → låtar. Det er ei ordbok inni ei
 ordbok: `self._albums[artist][album] = [Track, Track, ...]`.
 
 ### `PlayQueue`: køen
 
-Den mest «algoritmiske» klassen. Han har to lister:
+Den mest «algoritmiske» klassen. Den har to lister:
 
-- `tracks`: låtane i den rekkjefølgja dei vart lagde til (det brukaren ser).
-- `_order`: *indeksar* i `tracks`, i den rekkjefølgja dei skal spelast.
+- `tracks`: låtane i den rekkjefylgja dei vart lagde til (det brukaren ser).
+- `_order`: *indeksar* i `tracks`, i den rekkjefylgja dei skal spelast.
 
 Utan stokking er `_order` berre `[0, 1, 2, 3, …]`. Med stokking blir `_order` blanda, men `tracks` står
 i ro, så lista på skjermen hoppar ikkje rundt. Køen handterer òg **gjenta** (av / alle / éin) gjennom
@@ -178,7 +178,7 @@ Prøver du å lage ein lydmotor som manglar ein av metodane, nektar Python å la
 ### `Player`: dirigenten
 
 Tek imot kommandoar (`play_tracks`, `next`, `toggle_pause`, …), oppdaterer køen, seier frå til
-lydmotoren og varslar lyttarane. Han veit ikkje om det er mpv eller miniaudio han snakkar med.
+lydmotoren og varslar lyttarane. Den veit ikkje om det er mpv eller miniaudio Den snakkar med.
 
 ## 5. Trådar: når fleire ting skjer samtidig
 
@@ -209,10 +209,10 @@ ikkje endrar «gjeldande låt» samtidig.
 
 Søylene i Winamp-stil viser kor mykje det er av kvar frekvens akkurat no: bass til venstre, diskant til høgre.
 
-**Problemet:** mpv gir oss ikkje lyden han speler.
+**Problemet:** mpv gjer oss ikkje lyden den spelar.
 
 **Løysinga:** Me dekodar låta *ein gong til*, i bakgrunnen, til ei lang liste med tal (lydsamplar). Ei
-låt på 4 minutt tek 0,1 sekund å dekode. 30 gonger i sekundet spør me lydmotoren kor langt han er komen,
+låt på 4 minutt tek 0,1 sekund å dekode. 30 gonger i sekundet spør me lydmotoren kor langt den er komen,
 og analyserer lyden rundt akkurat det punktet:
 
 1. Hent 2048 samplar (ca. 0,09 sekund lyd) som sluttar på gjeldande posisjon.
@@ -222,7 +222,7 @@ og analyserer lyden rundt akkurat det punktet:
    frekvensar logaritmisk: frå 100 til 200 Hz høyrest like stort ut som frå 1000 til 2000 Hz.
 5. Gjer om til **desibel** og skaler til 0–1.
 
-Animasjonen gir det «Winamp-preget»: søylene stig med ein gong, men fell mjukt, og små toppar blir
+Animasjonen gjer det «Winamp-preget»: søylene stig med ein gong, men fell mjukt, og små toppar blir
 hengande litt før dei dett med aukande fart (som tyngdekraft).
 
 Søylene blir teikna med åttendedels-blokker `▁▂▃▄▅▆▇█`, så kvar rute kan vise åtte ulike høgder.
@@ -248,7 +248,7 @@ Dette krev at terminalen har *truecolor* (16,7 millionar fargar), noko dei flest
 
 ## 8. Ein lydmotor til: kvifor abstraksjonen lønte seg
 
-mpv er ein fantastisk lydmotor, men han må installerast separat (`brew install mpv`). På Windows er det
+mpv er ein fantastisk lydmotor, men den må installerast separat (`brew install mpv`). På Windows er det
 vanskeleg. For at *andre* enkelt skulle kunne bruke spelaren, laga me `MiniaudioBackend`, som berre
 treng pip-pakkar.
 
