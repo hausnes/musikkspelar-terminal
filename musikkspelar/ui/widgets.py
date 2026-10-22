@@ -8,6 +8,7 @@ from textual.widgets import DataTable, Static, Tree
 
 from ..models import RepeatMode, Track, format_time
 from ..player import PlayerState
+from .cover import CoverView
 from .spectrum import SpectrumView
 
 
@@ -188,6 +189,7 @@ class NowPlaying(Widget):
 
     def compose(self):
         with Horizontal(id="np-top"):
+            yield CoverView(id="np-cover")
             with Vertical(id="np-info"):
                 yield Static(id="np-title")
                 yield Static(id="np-details")

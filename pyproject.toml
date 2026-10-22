@@ -9,6 +9,7 @@ dependencies = [
     "mutagen>=1.47",
     "numpy>=2.0",
     "miniaudio>=1.60",
+    "pillow>=10.0",
 ]
 
 [project.scripts]

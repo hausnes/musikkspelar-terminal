@@ -8,7 +8,9 @@ from textual.widgets import Footer, Header
 from ..audio.analyzer import SpectrumAnalyzer
 from ..audio.mpv_backend import MpvBackend
 from ..models import Library
+from ..models.cover import find_cover
 from ..player import Player, PlayerState
+from .cover import CoverScreen, CoverView
 from .widgets import LibraryTree, NowPlaying, QueueView
 
 SEEK_STEP = 5      # sekund
@@ -40,8 +42,9 @@ class MusicPlayerApp(App):
         Binding("minus", "volume(-1)", "Volum -", show=False),
         Binding("s", "shuffle", "Stokk"),
         Binding("r", "repeat", "Gjenta"),
-        Binding("v", "toggle_spectrum", "Visualisering"),
-        Binding("c", "clear_queue", "Tøm kø"),
+        Binding("v", "toggle_spectrum", "Spekter"),
+        Binding("i", "show_cover", "Cover"),
+        Binding("c", "clear_queue", "Tøm kø", show=False),
         Binding("q", "quit", "Avslutt"),
     ]
 
@@ -54,6 +57,8 @@ class MusicPlayerApp(App):
         self.player.add_listener(self.refresh_views)
         self.analyzer = SpectrumAnalyzer()
         self.player.add_listener(self._prepare_spectrum)
+        self.player.add_listener(self._update_cover)
+        self._cover_track = None
 
     def compose(self):
         yield Header(show_clock=True)
@@ -96,6 +101,24 @@ class MusicPlayerApp(App):
 
     def _tick(self):
         self.query_one(NowPlaying).update_time(self.player)
+
+    # --- Albumcover ----------------------------------------------------
+
+    def _update_cover(self):
+        track = self.player.current_track
+        if track is self._cover_track:
+            return
+        self._cover_track = track
+        data = find_cover(track.path) if track else None
+        self.query_one("#np-cover", CoverView).set_image(data)
+
+    def action_show_cover(self):
+        track = self.player.current_track
+        if track is None:
+            self.notify("Ingenting spelar", timeout=2)
+            return
+        year = f" ({track.year})" if track.year else ""
+        self.push_screen(CoverScreen(find_cover(track.path), track.album, f"{track.artist} — {track.album}{year}"))
 
     # --- Visualisering -------------------------------------------------
 

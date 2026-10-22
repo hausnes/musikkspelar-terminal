@@ -24,11 +24,16 @@ QueueView {
 }
 
 NowPlaying {
-    height: 12;
+    height: 13;
     padding: 0 1;
     border: round $accent;
     border-title-color: $accent;
     border-title-style: bold;
+}
+
+#np-cover {
+    width: 20;
+    margin: 0 2 0 0;
 }
 
 #np-info {
