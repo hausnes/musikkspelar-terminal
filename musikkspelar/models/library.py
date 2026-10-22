@@ -7,8 +7,9 @@ from .track import SUPPORTED_EXTENSIONS, Track
 class Library:
     """A class to represent all the music in a folder, grouped by artist and album."""
 
-    def __init__(self, root):
+    def __init__(self, root, extensions=SUPPORTED_EXTENSIONS):
         self.root = Path(root).expanduser().resolve()
+        self.extensions = extensions
         self._albums = defaultdict(lambda: defaultdict(list))  # artist -> album -> [Track]
         self.errors = []  # filer som ikkje kunne lesast
 
@@ -17,7 +18,7 @@ class Library:
         self._albums.clear()
         self.errors.clear()
         for path in sorted(self.root.rglob("*")):
-            if path.suffix.lower() not in SUPPORTED_EXTENSIONS or path.name.startswith("."):
+            if path.suffix.lower() not in self.extensions or path.name.startswith("."):
                 continue
             try:
                 track = Track.from_file(path, self.root)

@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 
+from ..models.track import SUPPORTED_EXTENSIONS
+
 
 class AudioBackend(ABC):
     """The interface every audio engine must implement.
 
-    The Player only talks to this class, so the engine (mpv today) can be
-    replaced without touching the rest of the program.
+    The Player only talks to this class, so the engine (mpv or miniaudio)
+    can be replaced without touching the rest of the program.
 
     Callbacks may be called from another thread than the one that created
     the backend:
@@ -13,6 +15,9 @@ class AudioBackend(ABC):
           next file by itself (gapless).
       on_playback_finished(): there was nothing more to play.
     """
+
+    # Filtypane backenden kan spele. Biblioteket hoppar over alle andre.
+    SUPPORTED_EXTENSIONS = SUPPORTED_EXTENSIONS
 
     def __init__(self):
         self.on_track_started_automatically = lambda: None

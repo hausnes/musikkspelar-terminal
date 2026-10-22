@@ -1,0 +1,25 @@
+name: Testar
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        python: ["3.11", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Installer
+        run: pip install ".[test]"
+      - name: Køyr testane
+        run: pytest -v
+      - name: Sjekk at programmet startar
+        run: musikkspelar --help
