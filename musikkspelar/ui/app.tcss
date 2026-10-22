@@ -1,0 +1,36 @@
+#main {
+    height: 1fr;
+}
+
+LibraryTree, QueueView, NowPlaying {
+    border: round $panel-lighten-2;
+    border-title-color: $text-muted;
+    background: $surface;
+}
+
+LibraryTree:focus, QueueView:focus {
+    border: round $accent;
+    border-title-color: $accent;
+    border-title-style: bold;
+}
+
+LibraryTree {
+    width: 2fr;
+    padding: 0 1;
+}
+
+QueueView {
+    width: 3fr;
+}
+
+NowPlaying {
+    height: 6;
+    padding: 0 1;
+    border: round $accent;
+    border-title-color: $accent;
+    border-title-style: bold;
+}
+
+#np-progress {
+    margin: 0 3;
+}
