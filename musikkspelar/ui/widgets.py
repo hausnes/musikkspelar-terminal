@@ -1,5 +1,6 @@
 from rich.text import Text
 from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
 from textual.content import Content
 from textual.message import Message
 from textual.widget import Widget
@@ -7,6 +8,7 @@ from textual.widgets import DataTable, Static, Tree
 
 from ..models import RepeatMode, Track, format_time
 from ..player import PlayerState
+from .spectrum import SpectrumView
 
 
 class LibraryTree(Tree):
@@ -177,28 +179,36 @@ class ProgressLine(Widget):
 
 
 class NowPlaying(Widget):
-    """Shows the current track, progress and the player's modes."""
+    """Shows the current track, the spectrum analyser, progress and the player's modes."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, spectrum_source=None, **kwargs):
         super().__init__(**kwargs)
         self.border_title = "No spelar"
+        self._spectrum_source = spectrum_source
 
     def compose(self):
-        yield Static(id="np-title")
-        yield Static(id="np-details")
+        with Horizontal(id="np-top"):
+            with Vertical(id="np-info"):
+                yield Static(id="np-title")
+                yield Static(id="np-details")
+                yield Static(id="np-status")
+            yield SpectrumView(source=self._spectrum_source, id="np-spectrum")
         yield ProgressLine(id="np-progress")
-        yield Static(id="np-status")
+
+    def toggle_spectrum(self):
+        spectrum = self.query_one(SpectrumView)
+        spectrum.display = not spectrum.display
 
     def show(self, player):
         track = player.current_track
         icon = {PlayerState.PLAYING: "▶", PlayerState.PAUSED: "⏸", PlayerState.STOPPED: "■"}[player.state]
         if track is None:
             self.query_one("#np-title", Static).update(Content.styled(f"{icon}  Ingenting spelar", "dim"))
-            self.query_one("#np-details", Static).update("   Vel ei låt i biblioteket og trykk Enter")
+            self.query_one("#np-details", Static).update("   Vel ei låt i biblioteket\n   og trykk Enter")
         else:
             self.query_one("#np-title", Static).update(Content.styled(f"{icon}  {track.title}", "bold $text"))
             year = f" ({track.year})" if track.year else ""
-            self.query_one("#np-details", Static).update(Content(f"   {track.artist} — {track.album}{year}"))
+            self.query_one("#np-details", Static).update(Content(f"   {track.artist}\n   {track.album}{year}"))
 
         queue = player.queue
         repeating = queue.repeat is not RepeatMode.OFF
@@ -207,7 +217,7 @@ class NowPlaying(Widget):
             ("⇄ Stokk", "bold $accent" if queue.shuffle else "dim"),
             "   ",
             (f"↻ Gjenta: {queue.repeat.value}", "bold $accent" if repeating else "dim"),
-            f"   Volum {player.volume} %",
+            f"\n   Volum {player.volume} %",
         )
         self.query_one("#np-status", Static).update(status)
         self.update_time(player)

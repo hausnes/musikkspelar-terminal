@@ -5,9 +5,10 @@ from textual.containers import Horizontal
 from textual.message import Message
 from textual.widgets import Footer, Header
 
+from ..audio.analyzer import SpectrumAnalyzer
 from ..audio.mpv_backend import MpvBackend
 from ..models import Library
-from ..player import Player
+from ..player import Player, PlayerState
 from .widgets import LibraryTree, NowPlaying, QueueView
 
 SEEK_STEP = 5      # sekund
@@ -39,6 +40,7 @@ class MusicPlayerApp(App):
         Binding("minus", "volume(-1)", "Volum -", show=False),
         Binding("s", "shuffle", "Stokk"),
         Binding("r", "repeat", "Gjenta"),
+        Binding("v", "toggle_spectrum", "Visualisering"),
         Binding("c", "clear_queue", "Tøm kø"),
         Binding("q", "quit", "Avslutt"),
     ]
@@ -50,13 +52,15 @@ class MusicPlayerApp(App):
         # og blokkerer ikkje, så vi sender dei vidare som meldingar.
         self.player = Player(MpvBackend(), dispatch=lambda callback: self.post_message(BackendEvent(callback)))
         self.player.add_listener(self.refresh_views)
+        self.analyzer = SpectrumAnalyzer()
+        self.player.add_listener(self._prepare_spectrum)
 
     def compose(self):
         yield Header(show_clock=True)
         with Horizontal(id="main"):
             yield LibraryTree(id="library")
             yield QueueView(id="queue")
-        yield NowPlaying(id="now-playing")
+        yield NowPlaying(spectrum_source=self._spectrum_levels, id="now-playing")
         yield Footer()
 
     def on_mount(self):
@@ -92,6 +96,20 @@ class MusicPlayerApp(App):
 
     def _tick(self):
         self.query_one(NowPlaying).update_time(self.player)
+
+    # --- Visualisering -------------------------------------------------
+
+    def _prepare_spectrum(self):
+        """Decodes the current and the next track in advance, so the bars are ready in time."""
+        for track in (self.player.current_track, self.player.queue.peek_next()):
+            if track is not None:
+                self.analyzer.prepare(track.path)
+
+    def _spectrum_levels(self, bands):
+        track = self.player.current_track
+        if track is None or self.player.state is not PlayerState.PLAYING:
+            return None  # søylene fell ned til null
+        return self.analyzer.levels(track.path, self.player.position, bands)
 
     # --- Meldingar frå widgets og lydmotoren --------------------------
 
@@ -138,6 +156,9 @@ class MusicPlayerApp(App):
 
     def action_repeat(self):
         self.player.cycle_repeat()
+
+    def action_toggle_spectrum(self):
+        self.query_one(NowPlaying).toggle_spectrum()
 
     def action_clear_queue(self):
         self.player.clear_queue()

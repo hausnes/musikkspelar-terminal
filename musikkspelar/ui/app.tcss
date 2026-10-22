@@ -24,11 +24,24 @@ QueueView {
 }
 
 NowPlaying {
-    height: 6;
+    height: 12;
     padding: 0 1;
     border: round $accent;
     border-title-color: $accent;
     border-title-style: bold;
+}
+
+#np-info {
+    width: 38;
+    padding-top: 1;
+}
+
+#np-title, #np-details {
+    margin-bottom: 1;
+}
+
+#np-spectrum {
+    width: 1fr;
 }
 
 #np-progress {

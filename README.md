@@ -3,6 +3,8 @@ Ein musikkspelar i terminalen, med litt grom GUI.
 
 Byggd med [Textual](https://textual.textualize.io/) (grensesnitt), [mpv](https://mpv.io/) (avspeling, med gapless overgangar)
 og [mutagen](https://mutagen.readthedocs.io/) (lesing av taggar i MP3, FLAC m.fl.).
+Spektrumanalysatoren dekodar låta ein gong til med [miniaudio](https://github.com/irmen/pyminiaudio)
+og reknar ut frekvensane med numpy (FFT), i takt med posisjonen til mpv.
 
 ## Installasjon
 
@@ -31,6 +33,7 @@ Mappa blir skanna rekursivt. Mappestrukturen `Artist/Album/låt.mp3` blir brukt 
 | `x` | Fjern låt frå køen |
 | `s` | Stokk av/på |
 | `r` | Gjenta: av → alle → éin |
+| `v` | Spektrumanalysator av/på |
 | `c` | Tøm køen |
 | `Tab` | Byt mellom bibliotek og kø |
 | `q` | Avslutt |
@@ -45,9 +48,10 @@ musikkspelar/
 │   └── queue.py     # PlayQueue: rekkjefølgje, stokking og gjenta
 ├── audio/
 │   ├── backend.py   # AudioBackend: abstrakt grensesnitt for lydmotorar
-│   └── mpv_backend.py
+│   ├── mpv_backend.py
+│   └── analyzer.py  # SpectrumAnalyzer: frekvensspekter for eit gitt tidspunkt i ei låt
 ├── player.py        # Player: koplar køen til lydmotoren og varslar lyttarar
-└── ui/              # Textual-appen og widgetane
+└── ui/              # Textual-appen og widgetane (spectrum.py: Winamp-søylene)
 ```
 
 ## Testar
